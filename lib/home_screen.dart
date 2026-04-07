@@ -1,14 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:rhos/login_screen.dart';
 import 'package:rhos/palette.dart';
+import 'package:rhos/services/mock_auth_service.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final String nomeCompletoUsuario;
+
+  const HomeScreen({super.key, required this.nomeCompletoUsuario});
+
+  String _obterIniciais(String nomeCompleto) {
+    final partes = nomeCompleto
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+
+    if (partes.isEmpty) {
+      return '--';
+    }
+    if (partes.length == 1) {
+      final primeiraParte = partes.first;
+      if (primeiraParte.length == 1) {
+        return primeiraParte.toUpperCase();
+      }
+      return primeiraParte.substring(0, 2).toUpperCase();
+    }
+    return '${partes.first[0]}${partes.last[0]}'.toUpperCase();
+  }
+
+  void _sair(BuildContext context) {
+    ServicoAuthMock.instancia.sair();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final iniciais = _obterIniciais(nomeCompletoUsuario);
+
     return Scaffold(
       backgroundColor: Palette.backgroundColor3, // Cor do fundo
-
       // Barra Superior
       appBar: AppBar(
         backgroundColor: Palette.backgroundColor1, // Cor da barra
@@ -22,8 +56,8 @@ class HomeScreen extends StatelessWidget {
                 color: Palette.backgroundColor2, // Cor fundo nome
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                'EP',
+              child: Text(
+                iniciais,
                 style: TextStyle(
                   color: Palette.backgroundColor1, // Cor do nome
                   fontWeight: FontWeight.w900, // Formatação nome
@@ -33,9 +67,9 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(width: 15),
             // Texto Olá Elias Pires
-            const Text(
-              'Olá Elias Pires',
-              style: TextStyle(
+            Text(
+              'Olá $nomeCompletoUsuario',
+              style: const TextStyle(
                 color: Palette.textColor1, // Cor do nome
                 fontSize: 18, // Tamanho da fonte
                 fontWeight: FontWeight.w600, // Formatação da fonte
@@ -49,12 +83,17 @@ class HomeScreen extends StatelessWidget {
             icon: const Icon(Icons.notifications, color: Palette.textColor1),
             onPressed: () {},
           ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Palette.textColor1),
+            onPressed: () => _sair(context),
+          ),
         ],
       ),
       // Corpo tela body
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // Centraliza tudo no meio
+          mainAxisAlignment:
+              MainAxisAlignment.center, // Centraliza tudo no meio
           children: [
             const Text(
               'RH-OS',
@@ -76,8 +115,9 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 30),
 
             // Logo
-            Image.asset('assets/images/logo_rhos.png',
-            height: 280, // Tamanho logo
+            Image.asset(
+              'assets/images/logo_rhos.png',
+              height: 280, // Tamanho logo
             ),
             const SizedBox(height: 30),
             const Text(
@@ -97,14 +137,8 @@ class HomeScreen extends StatelessWidget {
         selectedItemColor: Palette.backgroundColor4, // Cor selecionado
         unselectedItemColor: Palette.backgroundColor2, // Cor não selecionado
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Início',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu),
-            label: 'Mais',
-          )
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Mais'),
         ],
       ),
     );
