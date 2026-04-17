@@ -1,0 +1,50 @@
+@startuml UC02-Analise-Curriculo-Atividade
+
+title UC02 — Escanear e Analisar Currículo\nDiagrama de Atividade
+
+|Recrutador|
+start
+:Seleciona "Novo Currículo";
+
+|App|
+:Exibe opções de envio;
+
+|Recrutador|
+if (Tipo de arquivo?) then (PDF)
+  :Faz upload do PDF;
+else (Imagem)
+  :Fotografa ou seleciona imagem;
+endif
+
+|App|
+:Valida formato e tamanho do arquivo;
+
+if (Arquivo válido?) then (não)
+  :Exibe mensagem de erro de formato;
+  |Recrutador|
+  :Seleciona novo arquivo;
+  stop
+else (sim)
+  :Envia arquivo para o Módulo de IA;
+
+  |Módulo de IA|
+  :Extrai informações do currículo;
+  :Classifica candidato por critérios;
+  :Gera resumo automático do perfil;
+
+  |App|
+  :Exibe perfil classificado e resumo ao recrutador;
+
+  |Recrutador|
+  if (Aprova a análise?) then (sim)
+    |App|
+    :Salva resultado no sistema;
+    stop
+  else (não)
+    :Solicita nova análise;
+    |App|
+    :Reenvia para o Módulo de IA;
+  endif
+endif
+
+@enduml

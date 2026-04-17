@@ -1,0 +1,23 @@
+@startuml UC01-Login-Sequencia
+
+title UC01 — Login do Recrutador\nDiagrama de Sequência
+
+actor Recrutador
+participant "App" as App
+participant "Autenticador" as Auth
+
+Recrutador -> App : Informa e-mail e senha
+App -> Auth : Valida credenciais
+
+alt Credenciais válidas
+    Auth --> App : Autenticação OK
+    App --> Recrutador : Exibe dashboard
+else Senha incorreta (tentativas < 5)
+    Auth --> App : Falha na autenticação
+    App --> Recrutador : Exibe mensagem de erro
+else 5ª tentativa inválida
+    Auth --> App : Conta bloqueada
+    App --> Recrutador : Orienta recuperação de acesso
+end
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml UC02-Analise-Curriculo-Sequencia
+
+title UC02 — Escanear e Analisar Currículo\nDiagrama de Sequência
+
+actor Recrutador
+participant "App" as App
+participant "Módulo de IA" as IA
+participant "Armazenamento" as DB
+
+Recrutador -> App : Seleciona currículo (PDF ou imagem)
+App -> App : Valida formato e tamanho
+
+alt Arquivo inválido
+    App --> Recrutador : Exibe erro de formato
+else Arquivo válido
+    App -> IA : Envia arquivo para análise
+    IA -> IA : Extrai informações do currículo
+    IA -> IA : Classifica candidato por critérios
+    IA -> IA : Gera resumo automático do perfil
+    IA --> App : Retorna resultado da análise
+    App --> Recrutador : Exibe perfil classificado e resumo
+
+    alt Recrutador aprova resultado
+        Recrutador -> App : Confirma e salva
+        App -> DB : Persiste resultado
+        DB --> App : Confirmação de gravação
+        App --> Recrutador : Exibe mensagem de sucesso
+    else Recrutador solicita nova análise
+        Recrutador -> App : Solicita reanálise
+        App -> IA : Reenvia arquivo para análise
+    end
+end
+
+@enduml

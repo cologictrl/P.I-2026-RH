@@ -1,0 +1,32 @@
+@startuml UC01-Login-Atividade
+
+title UC01 — Login do Recrutador\nDiagrama de Atividade
+
+|Recrutador|
+start
+:Acessa o aplicativo;
+:Informa e-mail e senha;
+
+|Sistema|
+:Valida credenciais;
+
+if (Credenciais válidas?) then (sim)
+  :Cria sessão autenticada;
+  |Recrutador|
+  :Acessa o dashboard;
+  stop
+else (não)
+  if (5ª tentativa inválida?) then (sim)
+    |Sistema|
+    :Bloqueia a conta temporariamente;
+    :Orienta o recrutador a recuperar o acesso;
+    stop
+  else (não)
+    |Sistema|
+    :Exibe mensagem de erro;
+    |Recrutador|
+    :Tenta novamente;
+  endif
+endif
+
+@enduml
