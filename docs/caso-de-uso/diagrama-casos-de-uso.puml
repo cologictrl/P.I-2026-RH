@@ -1,86 +1,76 @@
-@startuml diagrama-casos-de-uso
+@startuml diagrama-casos-de-uso-final
 
-title Diagrama de Casos de Uso – RHOS (RH Operation System)
+title Diagrama de Casos de Uso – RHOS
 
-skinparam backgroundColor #FFFFFF
-skinparam actorStyle awesome
+left to right direction
+skinparam linetype ortho
+skinparam backgroundColor #FDFDFD
+skinparam packageStyle rectangle
+
 skinparam usecase {
-  BackgroundColor #EFF6FF
-  BorderColor #255F71
-  FontColor #1A1A1A
-  FontSize 13
+    BackgroundColor #F0F7FF
+    BorderColor #255F71
+    ArrowColor #255F71
+    FontSize 12
 }
-skinparam actor {
-  BackgroundColor #255F71
-  FontColor #255F71
-  FontSize 13
-}
-skinparam ArrowColor #255F71
-skinparam rectangleBorderColor #255F71
-skinparam rectangleFontColor #255F71
-skinparam rectangleFontSize 14
-skinparam rectangleBackgroundColor #F8FAFB
 
-' ── Atores ──────────────────────────────────────────────────────
-actor Administrador as A
-actor Recrutador    as R
-actor Candidato     as C
+skinparam actor {
+    BackgroundColor #255F71
+    BorderColor #255F71
+    FontSize 12
+}
+
+' ── Atores Exclusivos do Sistema ────────────────────────────────
+actor "Administrador" as Admin
+actor "Recrutador" as Recruiter
+actor "Candidato" as Candidate
 
 ' ── Sistema ─────────────────────────────────────────────────────
 rectangle "RHOS – RH Operation System" {
 
-  ' Acesso
-  usecase (UC00\nAutenticar no Sistema) as UC00
+    usecase (UC00\nAutenticar no Sistema) as UC00
 
-  ' Candidatos
-  usecase (UC01\nImportar e Cadastrar\nCurrículo) as UC01
-  usecase (UC02\nGerenciar Status\ndo Candidato) as UC02
-  usecase (UC03\nConsultar Banco\nde Talentos) as UC03
+    package "Gestão de Talentos" {
+        usecase (UC01\nImportar e Cadastrar\nCurrículo) as UC01
+        usecase (UC03\nConsultar Banco\nde Talentos) as UC03
+        usecase (UC02\nGerenciar Status\ndo Candidato) as UC02
+    }
 
-  ' Processos
-  usecase (UC04\nCadastrar Vaga) as UC04
-  usecase (UC05\nClassificar Candidatos\npor Critérios) as UC05
-  usecase (UC06\nEncerrar Processo\nSeletivo) as UC06
+    package "Processos Seletivos" {
+        usecase (UC04\nCadastrar Vaga) as UC04
+        usecase (UC05\nClassificar Candidatos\npor Critérios) as UC05
+        usecase (UC06\nEncerrar Processo\nSeletivo) as UC06
+    }
 
-  ' Relatórios e admin
-  usecase (UC07\nGerar Relatório\ndo Processo) as UC07
-  usecase (UC08\nGerenciar Usuários\ndo Sistema) as UC08
-
+    package "Administração e Relatórios" {
+        usecase (UC07\nGerar Relatório\ndo Processo) as UC07
+        usecase (UC08\nGerenciar Usuários\ndo Sistema) as UC08
+    }
 }
 
-' ── Relacionamentos – Administrador ─────────────────────────────
-A --> UC00
-A --> UC06
-A --> UC07
-A --> UC08
+' ── Relacionamentos: Autenticação (Comum aos 3) ─────────────────
+Admin -- UC00
+Recruiter -- UC00
+Candidate -- UC00
 
-' ── Relacionamentos – Recrutador ────────────────────────────────
-R --> UC00
-R --> UC01
-R --> UC02
-R --> UC03
-R --> UC04
-R --> UC05
-R --> UC06
-R --> UC07
+' ── Relacionamentos: Candidato ──────────────────────────────────
+Candidate -- UC01
 
-' ── Relacionamentos – Candidato ─────────────────────────────────
-C --> UC00
-C --> UC01
+' ── Relacionamentos: Recrutador ─────────────────────────────────
+Recruiter -- UC01
+Recruiter -- UC03
+Recruiter -- UC04
+Recruiter -- UC06
 
-' ── Includes (dependências obrigatórias) ────────────────────────
-UC01 ..> UC00 : <<include>>
-UC02 ..> UC00 : <<include>>
-UC03 ..> UC00 : <<include>>
-UC04 ..> UC00 : <<include>>
-UC05 ..> UC00 : <<include>>
-UC06 ..> UC00 : <<include>>
-UC07 ..> UC00 : <<include>>
-UC08 ..> UC00 : <<include>>
+' ── Relacionamentos: Administrador ──────────────────────────────
+Admin -- UC06
+Admin -- UC08
 
-' ── Extends (fluxos opcionais) ──────────────────────────────────
-UC03 ..> UC02 : <<extend>>
-UC05 ..> UC04 : <<extend>>
-UC07 ..> UC06 : <<extend>>
+' ── Lógica de Extensão (Ações Indiretas) ────────────────────────
+' Evita linhas dos atores até esses casos de uso secundários
+UC03 <.. UC02 : <<extend>>
+UC04 <.. UC05 : <<extend>>
+UC06 <.. UC07 : <<extend>>
+UC03 <.. UC07 : <<extend>>
 
 @enduml
