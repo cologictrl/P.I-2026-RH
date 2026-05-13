@@ -1,0 +1,86 @@
+@startuml diagrama-casos-de-uso
+
+title Diagrama de Casos de Uso – RHOS (RH Operation System)
+
+skinparam backgroundColor #FFFFFF
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EFF6FF
+  BorderColor #255F71
+  FontColor #1A1A1A
+  FontSize 13
+}
+skinparam actor {
+  BackgroundColor #255F71
+  FontColor #255F71
+  FontSize 13
+}
+skinparam ArrowColor #255F71
+skinparam rectangleBorderColor #255F71
+skinparam rectangleFontColor #255F71
+skinparam rectangleFontSize 14
+skinparam rectangleBackgroundColor #F8FAFB
+
+' ── Atores ──────────────────────────────────────────────────────
+actor Administrador as A
+actor Recrutador    as R
+actor Candidato     as C
+
+' ── Sistema ─────────────────────────────────────────────────────
+rectangle "RHOS – RH Operation System" {
+
+  ' Acesso
+  usecase (UC00\nAutenticar no Sistema) as UC00
+
+  ' Candidatos
+  usecase (UC01\nImportar e Cadastrar\nCurrículo) as UC01
+  usecase (UC02\nGerenciar Status\ndo Candidato) as UC02
+  usecase (UC03\nConsultar Banco\nde Talentos) as UC03
+
+  ' Processos
+  usecase (UC04\nCadastrar Vaga) as UC04
+  usecase (UC05\nClassificar Candidatos\npor Critérios) as UC05
+  usecase (UC06\nEncerrar Processo\nSeletivo) as UC06
+
+  ' Relatórios e admin
+  usecase (UC07\nGerar Relatório\ndo Processo) as UC07
+  usecase (UC08\nGerenciar Usuários\ndo Sistema) as UC08
+
+}
+
+' ── Relacionamentos – Administrador ─────────────────────────────
+A --> UC00
+A --> UC06
+A --> UC07
+A --> UC08
+
+' ── Relacionamentos – Recrutador ────────────────────────────────
+R --> UC00
+R --> UC01
+R --> UC02
+R --> UC03
+R --> UC04
+R --> UC05
+R --> UC06
+R --> UC07
+
+' ── Relacionamentos – Candidato ─────────────────────────────────
+C --> UC00
+C --> UC01
+
+' ── Includes (dependências obrigatórias) ────────────────────────
+UC01 ..> UC00 : <<include>>
+UC02 ..> UC00 : <<include>>
+UC03 ..> UC00 : <<include>>
+UC04 ..> UC00 : <<include>>
+UC05 ..> UC00 : <<include>>
+UC06 ..> UC00 : <<include>>
+UC07 ..> UC00 : <<include>>
+UC08 ..> UC00 : <<include>>
+
+' ── Extends (fluxos opcionais) ──────────────────────────────────
+UC03 ..> UC02 : <<extend>>
+UC05 ..> UC04 : <<extend>>
+UC07 ..> UC06 : <<extend>>
+
+@enduml

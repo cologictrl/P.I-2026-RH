@@ -1,0 +1,44 @@
+@startuml UC03-Login-Firebase-Atividade
+
+title UC03 — Login via Firebase Auth\nDiagrama de Atividade
+
+skinparam backgroundColor #FFFFFF
+skinparam activityBackgroundColor #EFF6FF
+skinparam activityBorderColor #255F71
+skinparam activityFontColor #1A1A1A
+skinparam activityArrowColor #255F71
+skinparam activityStartColor #255F71
+skinparam activityEndColor #255F71
+skinparam decisionBackgroundColor #FFF7ED
+skinparam decisionBorderColor #F48C68
+skinparam decisionFontColor #1A1A1A
+
+start
+
+:Usuário abre o app;
+:Exibe TelaLogin;
+:Usuário informa e-mail e senha;
+:Pressiona botão ENTRAR;
+:Exibe CircularProgressIndicator;
+:Chama FirebaseAuth.signInWithEmailAndPassword;
+
+if (Credenciais válidas?) then (sim)
+  :Recebe UserCredential com uid;
+  :Busca perfil de acesso no banco local;
+  :Salva uid e perfil em SharedPreferences;
+  :go_router redireciona para /home;
+  :Exibe TelaHome com dados do usuário;
+else (não)
+  if (Erro é FirebaseAuthException?) then (sim)
+    :Exibe SnackBar com mensagem de erro;
+    :Limpa campos de e-mail e senha;
+    :Aguarda nova tentativa;
+  else (erro de rede)
+    :Exibe SnackBar "Verifique sua conexão";
+  endif
+  :Retorna ao estado inicial da TelaLogin;
+endif
+
+stop
+
+@enduml

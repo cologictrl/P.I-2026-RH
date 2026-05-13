@@ -1,0 +1,50 @@
+@startuml UC03-Login-Firebase-Sequencia
+
+title UC03 — Login via Firebase Auth\nDiagrama de Sequência
+
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowColor #255F71
+skinparam sequenceParticipantBackgroundColor #EFF6FF
+skinparam sequenceParticipantBorderColor #255F71
+skinparam sequenceActorBackgroundColor #255F71
+skinparam sequenceActorFontColor #FFFFFF
+skinparam sequenceLifeLineBorderColor #255F71
+skinparam sequenceGroupBorderColor #F48C68
+skinparam sequenceGroupHeaderFontColor #F48C68
+skinparam sequenceGroupBackgroundColor #FFF7ED
+
+actor Recrutador
+participant "TelaLogin" as TL
+participant "AutenticarUsuario" as AU
+participant "FirebaseAuthService" as FAS
+participant "Firebase Auth" as FA
+participant "SharedPreferences" as SP
+participant "go_router" as GR
+
+Recrutador -> TL : Informa e-mail e senha
+TL -> TL : Exibe CircularProgressIndicator
+TL -> AU : executar(email, senha)
+AU -> FAS : login(email, senha)
+FAS -> FA : signInWithEmailAndPassword(email, senha)
+
+alt Credenciais válidas
+  FA --> FAS : UserCredential (uid)
+  FAS --> AU : UserCredential
+  AU -> SP : set('usuario_uid', uid)
+  AU -> SP : set('usuario_perfil', perfil)
+  AU --> TL : Usuario autenticado
+  TL -> GR : context.go('/home')
+  GR --> Recrutador : Exibe TelaHome
+else Credenciais inválidas
+  FA --> FAS : FirebaseAuthException
+  FAS --> AU : null
+  AU --> TL : null
+  TL --> Recrutador : SnackBar "Usuário ou senha inválidos"
+else Conta inexistente (primeiro acesso)
+  FA --> FAS : user-not-found
+  FAS --> AU : null
+  AU --> TL : null
+  TL --> Recrutador : SnackBar "Usuário não encontrado"
+end
+
+@enduml

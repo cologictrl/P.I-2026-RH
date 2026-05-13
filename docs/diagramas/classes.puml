@@ -1,0 +1,232 @@
+@startuml classes
+
+title Diagrama de Classes – Entidades e Repositórios\nRHOS (RH Operation System)
+
+skinparam classBackgroundColor #EFF6FF
+skinparam classBorderColor #255F71
+skinparam classHeaderBackgroundColor #255F71
+skinparam classFontColor #1A1A1A
+skinparam classHeaderFontColor #FFFFFF
+skinparam interfaceBackgroundColor #FFF7ED
+skinparam interfaceBorderColor #F48C68
+skinparam interfaceHeaderBackgroundColor #F48C68
+skinparam interfaceFontColor #1A1A1A
+skinparam interfaceHeaderFontColor #FFFFFF
+skinparam ArrowColor #255F71
+skinparam backgroundColor #FFFFFF
+
+' ── Interfaces de Repositório ────────────────────────────────────
+
+interface ICandidatoRepositorio {
+  +salvar(candidato: Candidato): Future<int>
+  +listarTodos(): Future<List<Candidato>>
+  +buscarPorId(id: int): Future<Candidato?>
+  +buscarPorNome(nome: String): Future<List<Candidato>>
+  +deletar(id: int): Future<void>
+  +atualizarCampo(id, campo, valor): Future<void>
+}
+
+interface IVagaRepositorio {
+  +salvar(vaga: Vaga): Future<int>
+  +listarTodas(): Future<List<Vaga>>
+  +listarPorStatus(status: String): Future<List<Vaga>>
+  +buscarPorId(id: int): Future<Vaga?>
+  +deletar(id: int): Future<void>
+  +atualizarStatus(id: int, status: String): Future<void>
+}
+
+interface IUsuarioRepositorio {
+  +autenticar(email: String, senhaHash: String): Future<Usuario?>
+  +buscarPorId(id: int): Future<Usuario?>
+  +listarTodos(): Future<List<Usuario>>
+  +salvar(usuario: Usuario): Future<int>
+  +atualizarAtivo(id: int, ativo: bool): Future<void>
+}
+
+interface ICandidaturaRepositorio {
+  +salvar(candidatura: Candidatura): Future<int>
+  +listarPorVaga(vagaId: int): Future<List<Candidatura>>
+  +listarPorCandidato(candidatoId: int): Future<List<Candidatura>>
+  +atualizarStatus(id: int, status: String): Future<void>
+  +atualizarScore(id: int, score: double): Future<void>
+}
+
+' ── Implementações Firestore ─────────────────────────────────────
+
+class CandidatoRepositorioFirestore {
+  -{static} _colecao: String = "candidatos"
+  -_db: FirebaseFirestore
+  +buscarPorEmail(email: String): Future<Candidato?>
+  +buscarPorCpf(cpf: String): Future<Candidato?>
+  +buscarPorIdStr(id: String): Future<Candidato?>
+  +deletarPorIdStr(id: String): Future<void>
+  +atualizarCampoStr(idStr, campo, valor): Future<void>
+}
+
+class VagaRepositorioFirestore {
+  -{static} _colecao: String = "vagas"
+  -_db: FirebaseFirestore
+  +buscarPorIdStr(id: String): Future<Vaga?>
+  +deletarPorIdStr(id: String): Future<void>
+  +atualizarStatusStr(idStr: String, status: String): Future<void>
+}
+
+class CandidaturaRepositorioFirestore {
+  -{static} _colecao: String = "candidaturas"
+  -_db: FirebaseFirestore
+  +listarPorVagaStr(vagaIdStr: String): Future<List<Candidatura>>
+  +atualizarStatusStr(idStr: String, status: String): Future<void>
+  +atualizarScoreStr(idStr: String, score: double): Future<void>
+}
+
+class UsuarioRepositorioImpl {
+  -_dao: UsuarioDao
+  +autenticar(email, senhaHash): Future<Usuario?>
+}
+
+' ── Entidades ────────────────────────────────────────────────────
+
+class Usuario {
+  +id: int?
+  +nome: String
+  +email: String
+  +senhaHash: String
+  +perfil: String
+  +ativo: bool
+  +fromMap(map: Map): Usuario
+  +toMap(): Map
+  +copyWith(): Usuario
+}
+
+class Candidato {
+  +id: int?
+  +idStr: String?
+  +usuarioId: int?
+  +nomeCompleto: String?
+  +nomePreferencia: String?
+  +cpf: String?
+  +email: String?
+  +telefone: String?
+  +rua: String?
+  +bairro: String?
+  +cidade: String?
+  +estado: String?
+  +cep: String?
+  +resumo: String?
+  +habilidades: List<Habilidade>
+  +idiomas: List<Idioma>
+  +experiencias: List<Experiencia>
+  +formacoes: List<Formacao>
+  +fromMap(map: Map): Candidato
+  +toMap(): Map
+  +copyWith(): Candidato
+}
+
+class Vaga {
+  +id: int?
+  +idStr: String?
+  +titulo: String
+  +descricao: String?
+  +status: String
+  +habilidadesDesejadas: List<String>?
+  +idiomasDesejados: List<String>?
+  +formacaoMinima: String?
+  +criadoPor: int?
+  +fromMap(map: Map): Vaga
+  +toMap(): Map
+  +copyWith(): Vaga
+}
+
+class Candidatura {
+  +id: int?
+  +idStr: String?
+  +candidatoId: int?
+  +candidatoIdStr: String?
+  +vagaId: int?
+  +vagaIdStr: String?
+  +score: double
+  +status: String
+  +fromMap(map: Map): Candidatura
+  +toMap(): Map
+  +copyWith(): Candidatura
+}
+
+class Experiencia {
+  +id: int?
+  +candidatoId: int?
+  +cargo: String?
+  +empresa: String?
+  +localidade: String?
+  +modalidade: String?
+  +dataInicio: String?
+  +dataFim: String?
+  +atual: bool
+  +descricao: String?
+}
+
+class Habilidade {
+  +id: int?
+  +candidatoId: int?
+  +nome: String
+  +categoria: String
+}
+
+class Idioma {
+  +id: int?
+  +candidatoId: int?
+  +nome: String
+  +nivel: String
+}
+
+class Formacao {
+  +id: int?
+  +candidatoId: int?
+  +instituicao: String?
+  +curso: String?
+  +grau: String?
+  +anoConclusao: String?
+}
+
+' ── Casos de Uso ─────────────────────────────────────────────────
+
+class ListarCandidatos {
+  -_repo: ICandidatoRepositorio
+  +executar(): Future<List<Candidato>>
+}
+
+class SalvarCandidato {
+  -_repo: ICandidatoRepositorio
+  +executar(candidato: Candidato): Future<int>
+}
+
+class RanquearCandidatos {
+  +calcularScore(candidato, vaga): double
+  +ranquear(candidaturas, candidatos, vaga): List<Candidatura>
+}
+
+class AutenticarUsuario {
+  -_authService: FirebaseAuthService
+  -_prefs: SharedPreferences
+  +executar(email, senha): Future<Usuario?>
+}
+
+' ── Relacionamentos ──────────────────────────────────────────────
+
+ICandidatoRepositorio    <|.. CandidatoRepositorioFirestore
+IVagaRepositorio         <|.. VagaRepositorioFirestore
+ICandidaturaRepositorio  <|.. CandidaturaRepositorioFirestore
+IUsuarioRepositorio      <|.. UsuarioRepositorioImpl
+
+Candidatura "n" --> "1" Candidato
+Candidatura "n" --> "1" Vaga
+
+Candidato "1" *-- "n" Habilidade
+Candidato "1" *-- "n" Idioma
+Candidato "1" *-- "n" Experiencia
+Candidato "1" *-- "n" Formacao
+
+ListarCandidatos --> ICandidatoRepositorio
+SalvarCandidato  --> ICandidatoRepositorio
+RanquearCandidatos --> IVagaRepositorio
+
+@enduml

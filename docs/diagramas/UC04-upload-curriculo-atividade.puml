@@ -1,0 +1,57 @@
+@startuml UC04-Upload-Curriculo-Atividade
+
+title UC04 — Upload e Extração de Currículo\nDiagrama de Atividade
+
+skinparam backgroundColor #FFFFFF
+skinparam activityBackgroundColor #EFF6FF
+skinparam activityBorderColor #255F71
+skinparam activityFontColor #1A1A1A
+skinparam activityArrowColor #255F71
+skinparam activityStartColor #255F71
+skinparam activityEndColor #255F71
+skinparam decisionBackgroundColor #FFF7ED
+skinparam decisionBorderColor #F48C68
+
+start
+
+:Usuário acessa Tela de Upload;
+:Pressiona "Selecionar arquivo";
+:FilePicker abre gerenciador de arquivos;
+
+if (Usuário selecionou arquivo?) then (sim)
+  if (Formato válido? (PDF ou TXT)) then (sim)
+    :Exibe LinearProgressIndicator;
+    if (É PDF?) then (sim)
+      :PdfParser extrai texto via Syncfusion;
+      if (Texto extraído > 50 chars?) then (sim)
+        :ExtratorDados aplica regex nos campos;
+      else (não — PDF escaneado)
+        :OcrService envia para Gemini 2.5 Flash;
+        :Gemini retorna JSON estruturado;
+      endif
+    else (TXT)
+      :TxtParser lê arquivo (UTF-8/Latin-1);
+      :ExtratorDados aplica regex nos campos;
+    endif
+    :Exibe campos extraídos na tela;
+    note right
+      ✅ Campo encontrado
+      ⚠️ Campo não encontrado
+         (editável manualmente)
+    end note
+    :Usuário revisa e corrige campos;
+    :Pressiona "Confirmar e Salvar";
+    :ICandidatoRepositorio.salvar(candidato);
+    :Firestore armazena documento na coleção 'candidatos';
+    :Exibe SnackBar de sucesso;
+  else (não)
+    :Exibe mensagem de formato inválido;
+    :Aguarda nova seleção;
+  endif
+else (não — cancelou)
+  :Retorna ao estado inicial;
+endif
+
+stop
+
+@enduml

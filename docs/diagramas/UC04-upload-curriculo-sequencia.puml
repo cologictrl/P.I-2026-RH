@@ -1,0 +1,67 @@
+@startuml UC04-Upload-Curriculo-Sequencia
+
+title UC04 — Upload e Extração de Currículo\nDiagrama de Sequência
+
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowColor #255F71
+skinparam sequenceParticipantBackgroundColor #EFF6FF
+skinparam sequenceParticipantBorderColor #255F71
+skinparam sequenceActorBackgroundColor #255F71
+skinparam sequenceActorFontColor #FFFFFF
+skinparam sequenceLifeLineBorderColor #255F71
+skinparam sequenceGroupBorderColor #F48C68
+skinparam sequenceGroupHeaderFontColor #F48C68
+skinparam sequenceGroupBackgroundColor #FFF7ED
+skinparam databaseBackgroundColor #FFF7ED
+skinparam databaseBorderColor #F48C68
+
+actor Recrutador
+participant "TelaUpload" as TU
+participant "UploadCurriculo" as UC
+participant "PdfParser" as PP
+participant "ExtratorDados" as ED
+participant "OcrService\n<<fase 2>>" as OCR
+participant "Gemini 2.5 Flash\n<<fase 2>>" as GEM
+participant "ICandidatoRepositorio" as ICR
+database "Cloud Firestore" as FS
+
+Recrutador -> TU : Toca "Selecionar arquivo"
+TU -> UC : executar()
+UC -> UC : FilePicker.pickFiles(['pdf','txt'])
+UC --> TU : FilePickerResult
+TU -> TU : Exibe LinearProgressIndicator
+
+alt Arquivo PDF
+  TU -> PP : extrairTexto(caminho)
+  PP -> PP : Syncfusion extrai texto de todas as páginas
+  alt PDF digital (texto > 50 chars)
+    PP --> TU : texto bruto extraído
+    TU -> ED : extrair(texto)
+    ED -> ED : Aplica regex: email, CPF, telefone, CEP, datas
+    ED -> ED : Detecta seções: resumo, experiência, formação, habilidades, idiomas
+    ED --> TU : Map<String, dynamic> com campos extraídos
+  else PDF escaneado (texto vazio) — FASE 2
+    PP --> TU : "" (string vazia)
+    TU -> OCR : extrairTextoDeImagem(bytes)
+    OCR -> GEM : Vision API\nbase64(bytes) + prompt estruturado
+    GEM --> OCR : JSON com campos do currículo
+    OCR --> TU : Map<String, dynamic> com campos extraídos
+  end
+else Arquivo TXT
+  TU -> PP : TxtParser.extrairTexto(caminho)
+  PP --> TU : texto bruto (UTF-8 ou Latin-1)
+  TU -> ED : extrair(texto)
+  ED --> TU : Map<String, dynamic> com campos extraídos
+end
+
+TU --> Recrutador : Exibe campos (✅ encontrado | ⚠️ preencher manualmente)
+
+Recrutador -> TU : Revisa, corrige e confirma
+TU -> ICR : salvar(candidato)
+ICR -> FS : collection('candidatos').add(candidato.toMap())
+FS --> ICR : DocumentReference com docId
+ICR --> TU : idStr gerado
+
+TU --> Recrutador : SnackBar "Currículo salvo com sucesso"
+
+@enduml

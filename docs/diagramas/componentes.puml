@@ -1,0 +1,125 @@
+@startuml componentes
+
+title Diagrama de Componentes – RHOS (RH Operation System)
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FFFFFF
+skinparam component {
+  BackgroundColor #EFF6FF
+  BorderColor #255F71
+  FontColor #1A1A1A
+  FontSize 13
+}
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #F48C68
+  FontColor #1A1A1A
+  FontSize 13
+}
+skinparam package {
+  BackgroundColor #F8FAFB
+  BorderColor #CBD5E1
+  FontColor #1A1A1A
+  FontSize 14
+}
+skinparam ArrowColor #255F71
+
+' ── Flutter App ──────────────────────────────────────────────────
+package "RH-OS App (Flutter)" {
+
+  package "Presentation" {
+    [TelaLogin]         as TL
+    [TelaHome]          as TH
+    [TelaCurriculos]    as TC
+    [TelaVagas]         as TV
+    [TelaDashboard]     as TD
+    [TelaAdmin]         as TA
+    [TelaMais]          as TM
+  }
+
+  package "Domain" {
+    [AutenticarUsuario]         as AU
+    [ListarCandidatos]          as LC
+    [SalvarCandidato]           as SC
+    [UploadCurriculo]           as UC
+    [RanquearCandidatos]        as RC
+    [ListarVagas]               as LV
+    [SalvarVaga]                as SV
+    [ListarCandidaturasPorVaga] as LCP
+
+    interface ICandidatoRepositorio as IC
+    interface IVagaRepositorio      as IV
+    interface IUsuarioRepositorio   as IU
+  }
+
+  package "Data" {
+    [FirebaseAuthService]           as FAS
+    [CandidatoRepositorioFirestore] as CRF
+    [VagaRepositorioFirestore]      as VRF
+    [UsuarioRepositorioImpl]        as URI
+    [PdfParser]                     as PP
+    [TxtParser]                     as TP
+    [ExtratorDados]                 as ED
+    [OcrService <<placeholder>>]    as OCR
+  }
+
+  package "Core" {
+    [AppTema]    as AT
+    [AppRoutes]  as AR
+    [Injecao]    as IN
+  }
+}
+
+' ── Firebase ─────────────────────────────────────────────────────
+package "Google Firebase" {
+  database "Firebase Auth"    as FA
+  database "Cloud Firestore"  as CF
+}
+
+' ── Google AI ────────────────────────────────────────────────────
+package "Google AI (Fase 2)" {
+  [Gemini 2.5 Flash] as GEM
+}
+
+' ── Presentation → Domain ────────────────────────────────────────
+TL  --> AU
+TC  --> LC
+TC  --> UC
+TV  --> RC
+TV  --> LV
+TD  --> LC
+TA  --> IU
+
+' ── Domain → Interfaces ──────────────────────────────────────────
+AU  --> IU
+LC  --> IC
+SC  --> IC
+RC  --> IV
+LV  --> IV
+SV  --> IV
+LCP --> IV
+
+' ── Interfaces → Implementações ─────────────────────────────────
+IU  ..> URI : implementa
+IC  ..> CRF : implementa
+IV  ..> VRF : implementa
+
+' ── Implementações → Firebase ────────────────────────────────────
+FAS --> FA
+URI --> FA
+CRF --> CF
+VRF --> CF
+
+' ── Upload pipeline ──────────────────────────────────────────────
+UC  --> PP
+UC  --> TP
+UC  --> ED
+UC  --> OCR
+OCR ..> GEM : <<fase 2>>
+
+' ── Core ─────────────────────────────────────────────────────────
+IN  ..> CRF : registra
+IN  ..> VRF : registra
+IN  ..> URI : registra
+
+@enduml
