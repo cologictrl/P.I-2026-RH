@@ -58,6 +58,7 @@ class CandidatoRepositorioFirestore {
   -_db: FirebaseFirestore
   +buscarPorEmail(email: String): Future<Candidato?>
   +buscarPorCpf(cpf: String): Future<Candidato?>
+  +buscarPorUsuarioUid(uid: String): Future<Candidato?>
   +buscarPorIdStr(id: String): Future<Candidato?>
   +deletarPorIdStr(id: String): Future<void>
   +atualizarCampoStr(idStr, campo, valor): Future<void>
@@ -79,18 +80,20 @@ class CandidaturaRepositorioFirestore {
   +atualizarScoreStr(idStr: String, score: double): Future<void>
 }
 
-class UsuarioRepositorioImpl {
-  -_dao: UsuarioDao
-  +autenticar(email, senhaHash): Future<Usuario?>
+class UsuarioRepositorioFirestore {
+  -{static} _colecao: String = "usuarios"
+  -_db: FirebaseFirestore
+  -_auth: FirebaseAuth
+  +buscarPorUid(uid: String): Future<Usuario?>
+  +atualizarAtivoStr(uid: String, ativo: bool): Future<void>
 }
 
 ' ── Entidades ────────────────────────────────────────────────────
 
 class Usuario {
-  +id: int?
+  +idStr: String?
   +nome: String
   +email: String
-  +senhaHash: String
   +perfil: String
   +ativo: bool
   +fromMap(map: Map): Usuario
@@ -101,13 +104,14 @@ class Usuario {
 class Candidato {
   +id: int?
   +idStr: String?
-  +usuarioId: int?
+  +usuarioUid: String?
   +nomeCompleto: String?
   +nomePreferencia: String?
   +cpf: String?
   +email: String?
   +telefone: String?
-  +rua: String?
+  +logradouro: String?
+  +numero: String?
   +bairro: String?
   +cidade: String?
   +estado: String?
@@ -131,7 +135,6 @@ class Vaga {
   +habilidadesDesejadas: List<String>?
   +idiomasDesejados: List<String>?
   +formacaoMinima: String?
-  +criadoPor: int?
   +fromMap(map: Map): Vaga
   +toMap(): Map
   +copyWith(): Vaga
@@ -140,9 +143,7 @@ class Vaga {
 class Candidatura {
   +id: int?
   +idStr: String?
-  +candidatoId: int?
   +candidatoIdStr: String?
-  +vagaId: int?
   +vagaIdStr: String?
   +score: double
   +status: String
@@ -153,7 +154,6 @@ class Candidatura {
 
 class Experiencia {
   +id: int?
-  +candidatoId: int?
   +cargo: String?
   +empresa: String?
   +localidade: String?
@@ -166,21 +166,18 @@ class Experiencia {
 
 class Habilidade {
   +id: int?
-  +candidatoId: int?
   +nome: String
   +categoria: String
 }
 
 class Idioma {
   +id: int?
-  +candidatoId: int?
   +nome: String
   +nivel: String
 }
 
 class Formacao {
   +id: int?
-  +candidatoId: int?
   +instituicao: String?
   +curso: String?
   +grau: String?
@@ -199,6 +196,16 @@ class SalvarCandidato {
   +executar(candidato: Candidato): Future<int>
 }
 
+class VerificarDuplicidade {
+  -_repo: ICandidatoRepositorio
+  +executar(cpf, email): Future<Candidato?>
+}
+
+class MergeCandidato {
+  -_repo: ICandidatoRepositorio
+  +executar(existente, novo): Future<void>
+}
+
 class RanquearCandidatos {
   +calcularScore(candidato, vaga): double
   +ranquear(candidaturas, candidatos, vaga): List<Candidatura>
@@ -210,12 +217,18 @@ class AutenticarUsuario {
   +executar(email, senha): Future<Usuario?>
 }
 
+class GeminiOcrService {
+  -{static} _apiKey: String
+  -{static} _prompt: String
+  +extrairDadosDosBytes(bytes, mimeType): Future<Map?>
+}
+
 ' ── Relacionamentos ──────────────────────────────────────────────
 
 ICandidatoRepositorio    <|.. CandidatoRepositorioFirestore
 IVagaRepositorio         <|.. VagaRepositorioFirestore
 ICandidaturaRepositorio  <|.. CandidaturaRepositorioFirestore
-IUsuarioRepositorio      <|.. UsuarioRepositorioImpl
+IUsuarioRepositorio      <|.. UsuarioRepositorioFirestore
 
 Candidatura "n" --> "1" Candidato
 Candidatura "n" --> "1" Vaga
@@ -225,8 +238,10 @@ Candidato "1" *-- "n" Idioma
 Candidato "1" *-- "n" Experiencia
 Candidato "1" *-- "n" Formacao
 
-ListarCandidatos --> ICandidatoRepositorio
-SalvarCandidato  --> ICandidatoRepositorio
-RanquearCandidatos --> IVagaRepositorio
+ListarCandidatos      --> ICandidatoRepositorio
+SalvarCandidato       --> ICandidatoRepositorio
+VerificarDuplicidade  --> ICandidatoRepositorio
+MergeCandidato        --> ICandidatoRepositorio
+RanquearCandidatos    --> IVagaRepositorio
 
 @enduml

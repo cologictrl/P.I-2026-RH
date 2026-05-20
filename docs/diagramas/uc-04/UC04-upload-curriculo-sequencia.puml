@@ -17,51 +17,73 @@ skinparam databaseBorderColor #F48C68
 
 actor Recrutador
 participant "TelaUpload" as TU
-participant "UploadCurriculo" as UC
+participant "ExtrairDadosCurriculo" as EDC
 participant "PdfParser" as PP
-participant "ExtratorDados" as ED
-participant "OcrService\n<<fase 2>>" as OCR
-participant "Gemini 2.5 Flash\n<<fase 2>>" as GEM
+participant "GeminiOcrService" as GEM
+participant "ExtratorDados\n(regex)" as ED
+participant "VerificarDuplicidade" as VD
 participant "ICandidatoRepositorio" as ICR
 database "Cloud Firestore" as FS
+participant "Gemini 2.5 Flash API" as GAPI
 
 Recrutador -> TU : Toca "Selecionar arquivo"
-TU -> UC : executar()
-UC -> UC : FilePicker.pickFiles(['pdf','txt'])
-UC --> TU : FilePickerResult
+TU -> TU : FilePicker.pickFiles(['pdf','txt'], withData: true)
+TU --> Recrutador : Arquivo selecionado
 TU -> TU : Exibe LinearProgressIndicator
 
 alt Arquivo PDF
-  TU -> PP : extrairTexto(caminho)
-  PP -> PP : Syncfusion extrai texto de todas as páginas
-  alt PDF digital (texto > 50 chars)
-    PP --> TU : texto bruto extraído
-    TU -> ED : extrair(texto)
-    ED -> ED : Aplica regex: email, CPF, telefone, CEP, datas
-    ED -> ED : Detecta seções: resumo, experiência, formação, habilidades, idiomas
-    ED --> TU : Map<String, dynamic> com campos extraídos
-  else PDF escaneado (texto vazio) — FASE 2
-    PP --> TU : "" (string vazia)
-    TU -> OCR : extrairTextoDeImagem(bytes)
-    OCR -> GEM : Vision API\nbase64(bytes) + prompt estruturado
-    GEM --> OCR : JSON com campos do currículo
-    OCR --> TU : Map<String, dynamic> com campos extraídos
+  TU -> TU : Exibe "Analisando com IA (Gemini 2.5 Flash)..."
+  TU -> EDC : executarComBytes(bytes, 'pdf')
+  EDC -> GEM : extrairDadosDosBytes(bytes, 'application/pdf')
+  GEM -> GAPI : POST /generateContent\n(bytes + prompt estruturado)
+  GAPI --> GEM : JSON com campos do currículo
+  GEM --> EDC : Map<String, dynamic>
+
+  alt Gemini retornou dados
+    EDC --> TU : Map com campos extraídos
+  else Gemini falhou (sem API Key / erro de rede)
+    GEM --> EDC : null
+    EDC -> PP : extrairTextoDosBytes(bytes)
+    PP --> EDC : texto bruto
+    EDC -> ED : extrair(texto)
+    ED --> EDC : Map<String, dynamic> via regex
+    EDC --> TU : Map com campos extraídos (fallback)
   end
+
 else Arquivo TXT
-  TU -> PP : TxtParser.extrairTexto(caminho)
-  PP --> TU : texto bruto (UTF-8 ou Latin-1)
-  TU -> ED : extrair(texto)
-  ED --> TU : Map<String, dynamic> com campos extraídos
+  TU -> TU : Exibe "Extraindo dados do arquivo..."
+  TU -> EDC : executarComBytes(bytes, 'txt')
+  EDC -> ED : extrair(utf8.decode(bytes))
+  ED --> EDC : Map<String, dynamic> via regex
+  EDC --> TU : Map com campos extraídos
 end
 
 TU --> Recrutador : Exibe campos (✅ encontrado | ⚠️ preencher manualmente)
+Recrutador -> TU : Revisa, corrige e confirma "Salvar"
 
-Recrutador -> TU : Revisa, corrige e confirma
-TU -> ICR : salvar(candidato)
-ICR -> FS : collection('candidatos').add(candidato.toMap())
-FS --> ICR : DocumentReference com docId
-ICR --> TU : idStr gerado
+TU -> VD : executar(cpf, email)
+VD -> ICR : buscarPorCpf(cpf) / buscarPorEmail(email)
+ICR -> FS : query where cpf == ? or email == ?
+FS --> ICR : resultado
+ICR --> VD : Candidato? existente
+VD --> TU : Candidato? existente
 
-TU --> Recrutador : SnackBar "Currículo salvo com sucesso"
+alt Candidato já existe
+  TU --> Recrutador : Dialog: Atualizar / Cadastrar como novo / Cancelar
+  alt Recrutador escolhe "Atualizar"
+    TU -> ICR : salvar(merge dos dados)
+    ICR -> FS : doc(idStr).set(dados atualizados)
+    TU --> Recrutador : SnackBar "Dados atualizados"
+  else Recrutador escolhe "Cadastrar como novo"
+    TU -> ICR : salvar(candidato novo)
+    ICR -> FS : collection('candidatos').add(dados)
+    TU --> Recrutador : SnackBar "Candidato cadastrado"
+  end
+else Novo candidato
+  TU -> ICR : salvar(candidato)
+  ICR -> FS : collection('candidatos').add(dados)
+  FS --> ICR : DocumentReference (docId)
+  TU --> Recrutador : SnackBar "Currículo salvo com sucesso"
+end
 
 @enduml

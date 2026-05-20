@@ -11,6 +11,7 @@ skinparam activityStartColor #255F71
 skinparam activityEndColor #255F71
 skinparam decisionBackgroundColor #FFF7ED
 skinparam decisionBorderColor #F48C68
+skinparam decisionFontColor #1A1A1A
 
 start
 
@@ -19,35 +20,63 @@ start
 :FilePicker abre gerenciador de arquivos;
 
 if (Usuário selecionou arquivo?) then (sim)
-  if (Formato válido? (PDF ou TXT)) then (sim)
+  if (Formato válido? PDF ou TXT) then (sim)
     :Exibe LinearProgressIndicator;
+
     if (É PDF?) then (sim)
-      :PdfParser extrai texto via Syncfusion;
-      if (Texto extraído > 50 chars?) then (sim)
+      :Exibe "Analisando com IA (Gemini 2.5 Flash)...";
+      :GeminiOcrService envia PDF para Gemini 2.5 Flash API;
+      :Gemini analisa o documento e retorna JSON estruturado;
+
+      if (Gemini retornou dados?) then (sim)
+        :Usa dados do JSON do Gemini;
+      else (não — sem API Key ou erro)
+        :Fallback: PdfParser extrai texto do PDF;
         :ExtratorDados aplica regex nos campos;
-      else (não — PDF escaneado)
-        :OcrService envia para Gemini 2.5 Flash;
-        :Gemini retorna JSON estruturado;
       endif
+
     else (TXT)
+      :Exibe "Extraindo dados do arquivo...";
       :TxtParser lê arquivo (UTF-8/Latin-1);
       :ExtratorDados aplica regex nos campos;
     endif
+
     :Exibe campos extraídos na tela;
     note right
       ✅ Campo encontrado
       ⚠️ Campo não encontrado
          (editável manualmente)
     end note
+
     :Usuário revisa e corrige campos;
     :Pressiona "Confirmar e Salvar";
-    :ICandidatoRepositorio.salvar(candidato);
-    :Firestore armazena documento na coleção 'candidatos';
-    :Exibe SnackBar de sucesso;
-  else (não)
+
+    :VerificarDuplicidade busca por CPF e e-mail no Firestore;
+
+    if (Candidato já existe?) then (sim)
+      :Exibe Dialog de duplicidade;
+
+      if (Usuário escolhe "Atualizar"?) then (sim)
+        :MergeCandidato atualiza dados existentes no Firestore;
+        :Exibe SnackBar "Dados atualizados com sucesso";
+      else (Cadastrar como novo)
+        :ICandidatoRepositorio.salvar(candidato novo);
+        :Firestore armazena novo documento;
+        :Exibe SnackBar "Candidato cadastrado com sucesso";
+      endif
+
+    else (não — novo candidato)
+      :ICandidatoRepositorio.salvar(candidato);
+      :Firestore armazena documento na coleção 'candidatos';
+      :Exibe SnackBar "Currículo salvo com sucesso";
+    endif
+
+  else (não — formato inválido)
     :Exibe mensagem de formato inválido;
+    :Informa formatos aceitos: PDF e TXT;
     :Aguarda nova seleção;
   endif
+
 else (não — cancelou)
   :Retorna ao estado inicial;
 endif

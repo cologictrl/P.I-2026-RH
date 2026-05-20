@@ -45,6 +45,8 @@ package "RH-OS App (Flutter)" {
     [RanquearCandidatos]        as RC
     [ListarVagas]               as LV
     [SalvarVaga]                as SV
+    [VerificarDuplicidade]      as VD
+    [MergeCandidato]            as MC
     [ListarCandidaturasPorVaga] as LCP
 
     interface ICandidatoRepositorio as IC
@@ -53,14 +55,14 @@ package "RH-OS App (Flutter)" {
   }
 
   package "Data" {
-    [FirebaseAuthService]           as FAS
-    [CandidatoRepositorioFirestore] as CRF
-    [VagaRepositorioFirestore]      as VRF
-    [UsuarioRepositorioImpl]        as URI
-    [PdfParser]                     as PP
-    [TxtParser]                     as TP
-    [ExtratorDados]                 as ED
-    [OcrService <<placeholder>>]    as OCR
+    [FirebaseAuthService]              as FAS
+    [CandidatoRepositorioFirestore]    as CRF
+    [VagaRepositorioFirestore]         as VRF
+    [UsuarioRepositorioFirestore]      as URF
+    [PdfParser]                        as PP
+    [TxtParser]                        as TP
+    [ExtratorDados]                    as ED
+    [GeminiOcrService]                 as GEM
   }
 
   package "Core" {
@@ -77,36 +79,41 @@ package "Google Firebase" {
 }
 
 ' ── Google AI ────────────────────────────────────────────────────
-package "Google AI (Fase 2)" {
-  [Gemini 2.5 Flash] as GEM
+package "Google AI" {
+  [Gemini 2.5 Flash API] as GAPI
 }
 
 ' ── Presentation → Domain ────────────────────────────────────────
 TL  --> AU
 TC  --> LC
 TC  --> UC
+TC  --> VD
 TV  --> RC
 TV  --> LV
 TD  --> LC
 TA  --> IU
+TM  --> IU
 
 ' ── Domain → Interfaces ──────────────────────────────────────────
 AU  --> IU
 LC  --> IC
 SC  --> IC
+VD  --> IC
+MC  --> IC
 RC  --> IV
 LV  --> IV
 SV  --> IV
 LCP --> IV
 
 ' ── Interfaces → Implementações ─────────────────────────────────
-IU  ..> URI : implementa
+IU  ..> URF : implementa
 IC  ..> CRF : implementa
 IV  ..> VRF : implementa
 
 ' ── Implementações → Firebase ────────────────────────────────────
 FAS --> FA
-URI --> FA
+URF --> FA
+URF --> CF
 CRF --> CF
 VRF --> CF
 
@@ -114,12 +121,13 @@ VRF --> CF
 UC  --> PP
 UC  --> TP
 UC  --> ED
-UC  --> OCR
-OCR ..> GEM : <<fase 2>>
+UC  --> GEM
+GEM --> GAPI : API Key (--dart-define)
 
 ' ── Core ─────────────────────────────────────────────────────────
 IN  ..> CRF : registra
 IN  ..> VRF : registra
-IN  ..> URI : registra
+IN  ..> URF : registra
+IN  ..> GEM : registra
 
 @enduml
