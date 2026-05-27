@@ -2,25 +2,32 @@
 
 title Diagrama de Componentes – RHOS (RH Operation System)
 
+left to right direction
+skinparam dpi 180
+skinparam shadowing false
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 35
 skinparam componentStyle rectangle
 skinparam backgroundColor #FFFFFF
+skinparam defaultFontSize 14
 skinparam component {
   BackgroundColor #EFF6FF
   BorderColor #255F71
   FontColor #1A1A1A
-  FontSize 13
+  FontSize 14
 }
 skinparam database {
   BackgroundColor #FFF7ED
   BorderColor #F48C68
   FontColor #1A1A1A
-  FontSize 13
+  FontSize 14
 }
 skinparam package {
   BackgroundColor #F8FAFB
   BorderColor #CBD5E1
   FontColor #1A1A1A
-  FontSize 14
+  FontSize 15
 }
 skinparam ArrowColor #255F71
 
@@ -43,6 +50,7 @@ package "RH-OS App (Flutter)" {
     [SalvarCandidato]           as SC
     [UploadCurriculo]           as UC
     [RanquearCandidatos]        as RC
+    [RankingService]            as RS
     [ListarVagas]               as LV
     [SalvarVaga]                as SV
     [VerificarDuplicidade]      as VD
@@ -51,6 +59,7 @@ package "RH-OS App (Flutter)" {
 
     interface ICandidatoRepositorio as IC
     interface IVagaRepositorio      as IV
+    interface ICandidaturaRepositorio as ICA
     interface IUsuarioRepositorio   as IU
   }
 
@@ -58,6 +67,9 @@ package "RH-OS App (Flutter)" {
     [FirebaseAuthService]              as FAS
     [CandidatoRepositorioFirestore]    as CRF
     [VagaRepositorioFirestore]         as VRF
+    [CandidaturaRepositorioFirestore]  as CAF
+    [RankingRepositorioFirestore]      as RRF
+    [EntrevistaRepositorioFirestore]   as ERF
     [UsuarioRepositorioFirestore]      as URF
     [PdfParser]                        as PP
     [TxtParser]                        as TP
@@ -84,31 +96,34 @@ package "Google AI" {
 }
 
 ' ── Presentation → Domain ────────────────────────────────────────
-TL  --> AU
-TC  --> LC
-TC  --> UC
-TC  --> VD
-TV  --> RC
-TV  --> LV
-TD  --> LC
-TA  --> IU
-TM  --> IU
+TL  -right-> AU
+TC  -right-> LC
+TC  -right-> UC
+TC  -right-> VD
+TV  -right-> RC
+TV  -right-> RS
+TV  -right-> LV
+TD  -right-> LC
+TA  -right-> IU
+TM  -right-> IU
 
 ' ── Domain → Interfaces ──────────────────────────────────────────
-AU  --> IU
-LC  --> IC
-SC  --> IC
-VD  --> IC
-MC  --> IC
-RC  --> IV
-LV  --> IV
-SV  --> IV
-LCP --> IV
+AU  -right-> IU
+LC  -right-> IC
+SC  -right-> IC
+VD  -right-> IC
+MC  -right-> IC
+RC  -right-> IV
+LV  -right-> IV
+SV  -right-> IV
+LCP -right-> IV
+LCP -right-> ICA
 
 ' ── Interfaces → Implementações ─────────────────────────────────
-IU  ..> URF : implementa
-IC  ..> CRF : implementa
-IV  ..> VRF : implementa
+IU  -right.-> URF : implementa
+IC  -right.-> CRF : implementa
+IV  -right.-> VRF : implementa
+ICA -right.-> CAF : implementa
 
 ' ── Implementações → Firebase ────────────────────────────────────
 FAS --> FA
@@ -116,6 +131,9 @@ URF --> FA
 URF --> CF
 CRF --> CF
 VRF --> CF
+CAF --> CF
+RRF --> CF
+ERF --> CF
 
 ' ── Upload pipeline ──────────────────────────────────────────────
 UC  --> PP
@@ -127,6 +145,9 @@ GEM --> GAPI : API Key (--dart-define)
 ' ── Core ─────────────────────────────────────────────────────────
 IN  ..> CRF : registra
 IN  ..> VRF : registra
+IN  ..> CAF : registra
+IN  ..> RRF : registra
+IN  ..> ERF : registra
 IN  ..> URF : registra
 IN  ..> GEM : registra
 

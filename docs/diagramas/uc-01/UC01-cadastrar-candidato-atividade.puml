@@ -1,0 +1,28 @@
+@startuml UC01-cadastrar-candidato-atividade
+
+title UC01 - Cadastro de candidato (atividade)
+
+start
+:Selecionar arquivo de curriculo;
+if (Formato valido?) then (sim)
+  :Extrair texto (PDF ou OCR);
+  if (IA disponivel?) then (sim)
+    :Enviar para Gemini;
+    :Receber campos estruturados;
+  else (nao)
+    :Aplicar fallback local (regex);
+  endif
+  :Preencher dados do candidato;
+  :Validar resumo e habilidades;
+  if (Dados minimos ok?) then (sim)
+    :Salvar candidato no Firestore;
+    :Exibir sucesso;
+  else (nao)
+    :Exibir erro de validacao;
+  endif
+else (nao)
+  :Exibir erro de formato;
+endif
+stop
+
+@enduml

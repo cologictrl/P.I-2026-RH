@@ -1,0 +1,23 @@
+@startuml UC05-ranquear-candidatos-atividade
+
+title UC05 - Ranquear candidatos (atividade)
+
+start
+:Selecionar vaga e candidatos;
+:Aplicar filtros (status/score);
+:Verificar limite de lote;
+:Para cada candidato;
+if (Cache existe?) then (sim)
+  :Usar ranking cacheado;
+else (nao)
+  :Chamar IA;
+  if (IA falhou?) then (sim)
+    :Calcular score local;
+  endif
+  :Salvar ranking no Firestore;
+endif
+:Atualizar score da candidatura;
+:Exibir lista ordenada;
+stop
+
+@enduml

@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Retorna o perfil do usuario autenticado ('admin' | 'recrutador' | 'candidato' | 'visualizador')
+    function perfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.perfil;
+    }
+
+    // Verdadeiro se o perfil tiver permissao de escrita nas colecoes de RH
+    function isAdminOuRecrutador() {
+      return perfil() in ['admin', 'recrutador'];
+    }
+
+    // Colecao de usuarios: admin le/escreve qualquer um; usuario le o proprio
+    match /usuarios/{uid} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == uid || perfil() == 'admin');
+      allow write: if request.auth != null && perfil() == 'admin';
+    }
+
+    // Colecao de candidatos: todos autenticados leem; admin/recrutador ou o proprio usuario escrevem
+    match /candidatos/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+        (isAdminOuRecrutador() ||
+         resource.data.usuario_uid == request.auth.uid);
+    }
+
+    // Colecao de vagas: todos autenticados leem; apenas admin/recrutador escrevem
+    match /vagas/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isAdminOuRecrutador();
+    }
+
+    // Colecao de candidaturas: todos autenticados leem; apenas admin/recrutador escrevem
+    match /candidaturas/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isAdminOuRecrutador();
+    }
+
+    // Colecao de rankings: todos autenticados leem; apenas admin/recrutador escrevem
+    match /rankings/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isAdminOuRecrutador();
+    }
+
+    // Colecao de notificacoes: qualquer usuario autenticado le e escreve (proprias notificacoes)
+    match /notificacoes/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Colecao de entrevistas: todos autenticados leem; apenas admin/recrutador escrevem
+    match /entrevistas/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isAdminOuRecrutador();
+    }
+
+    // Colecao de auditoria: apenas admin le; qualquer autenticado pode registrar
+    match /auditoria/{docId} {
+      allow read: if request.auth != null && perfil() == 'admin';
+      allow write: if request.auth != null;
+    }
+  }
+}

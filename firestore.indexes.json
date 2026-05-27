@@ -1,0 +1,28 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "vagas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status",     "order": "ASCENDING"  },
+        { "fieldPath": "criado_em",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "candidaturas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "vagaIdStr", "order": "ASCENDING"  },
+        { "fieldPath": "score",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "candidatos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "usuario_uid", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

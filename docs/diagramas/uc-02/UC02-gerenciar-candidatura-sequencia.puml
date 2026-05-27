@@ -1,0 +1,36 @@
+@startuml UC02-gerenciar-candidatura-sequencia
+
+title UC02 - Gerenciar candidatura (sequencia)
+
+actor Recrutador as R
+participant "TelaDetalheVaga" as UI
+participant "RankingRepo" as RR
+participant "RankingService" as RS
+participant "RanquearCandidatos" as RC
+participant "CandidaturaRepo" as CR
+participant "AuditoriaService" as AUD
+participant "EntrevistaRepo" as ER
+
+R -> UI: Abrir vaga
+UI -> RR: buscar(vagaIdStr, candidatoIdStr)
+alt cache
+  RR --> UI: ranking
+else sem cache
+  UI -> RS: calcularRanking()
+  alt IA ok
+    RS --> UI: resultado
+  else IA falha
+    UI -> RC: calcularDetalhado()
+    RC --> UI: resultado local
+  end
+  UI -> RR: salvar(ranking)
+  UI -> CR: atualizarScoreStr()
+end
+R -> UI: Alterar status
+UI -> CR: atualizarStatusStr()
+UI -> AUD: registrar
+opt aprovado
+  UI -> ER: salvar entrevista
+end
+
+@enduml

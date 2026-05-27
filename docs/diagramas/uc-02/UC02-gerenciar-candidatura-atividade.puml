@@ -1,0 +1,22 @@
+@startuml UC02-gerenciar-candidatura-atividade
+
+title UC02 - Gerenciar candidatura (atividade)
+
+start
+:Abrir detalhe da vaga;
+:Listar candidaturas;
+:Selecionar candidato;
+if (Ranking em cache?) then (sim)
+  :Exibir ranking cacheado;
+else (nao)
+  :Calcular ranking (IA ou local);
+  :Salvar ranking e score;
+endif
+:Alterar status da candidatura;
+:Registrar auditoria;
+if (Aprovado?) then (sim)
+  :Oferecer agendamento de entrevista;
+endif
+stop
+
+@enduml

@@ -1,0 +1,14 @@
+@startuml UC06-entrevista-atividade
+
+title UC06 - Agendar entrevista (atividade)
+
+start
+:Selecionar candidato aprovado;
+:Escolher data e hora;
+:Inserir observacoes (opcional);
+:Salvar entrevista no Firestore;
+:Criar notificacao para candidato;
+:Exibir confirmacao;
+stop
+
+@enduml

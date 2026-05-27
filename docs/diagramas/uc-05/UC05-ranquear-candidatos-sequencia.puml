@@ -1,0 +1,29 @@
+@startuml UC05-ranquear-candidatos-sequencia
+
+title UC05 - Ranquear candidatos (sequencia)
+
+actor Recrutador as R
+participant "TelaDetalheVaga" as UI
+participant "RankingRepo" as RR
+participant "RankingService" as RS
+participant "RanquearCandidatos" as RC
+participant "CandidaturaRepo" as CR
+
+R -> UI: Calcular ranking
+UI -> RR: buscar(vagaIdStr, candidatoIdStr)
+alt cache
+  RR --> UI: ranking
+else sem cache
+  UI -> RS: calcularRanking()
+  alt IA ok
+    RS --> UI: resultado
+  else IA falha
+    UI -> RC: calcularDetalhado()
+    RC --> UI: resultado local
+  end
+  UI -> RR: salvar(ranking)
+end
+UI -> CR: atualizarScoreStr()
+UI --> R: Lista ordenada
+
+@enduml

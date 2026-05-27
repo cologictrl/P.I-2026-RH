@@ -1,0 +1,17 @@
+@startuml UC06-entrevista-sequencia
+
+title UC06 - Agendar entrevista (sequencia)
+
+actor Recrutador as R
+participant "TelaDetalheVaga" as UI
+participant "EntrevistaRepo" as ER
+participant "Firestore" as FS
+
+R -> UI: Agendar entrevista
+UI -> ER: salvar(entrevista)
+ER -> FS: add(entrevistas)
+FS --> ER: idStr
+UI -> FS: add(notificacoes)
+UI --> R: Confirmacao
+
+@enduml

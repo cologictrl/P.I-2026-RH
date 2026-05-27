@@ -1,0 +1,28 @@
+João Silva
+joao.silva@email.com
++55 (11) 98765-4321
+CPF: 123.456.789-09
+Data de nascimento: 15/03/1990
+Sexo: Masculino
+
+Endereço: Rua das Flores, 123, Jardim Paulista
+Bairro: Jardim Paulista
+Cidade: São Paulo, SP
+CEP: 01452-001
+
+Resumo
+Engenheiro de Software com 5 anos de experiência em Flutter e Firebase.
+
+Experiência
+Desenvolvedor Flutter Sênior - Nubank - 01/2022 - atual - Remoto
+Desenvolveu features críticas do super app do Nubank.
+
+Formação
+Universidade de São Paulo - Ciência da Computação - Graduação - 2015
+
+Habilidades
+Flutter, Dart, Firebase, Clean Architecture, Git, REST API
+
+Idiomas
+Inglês - Avançado
+Espanhol - Básico

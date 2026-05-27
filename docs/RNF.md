@@ -1,68 +1,53 @@
-# Requisitos Não Funcionais – RHOS (RH Operation System)
+﻿# Requisitos Nao Funcionais - RHOS (RH Operation System)
 ## Projeto Integrado 2026 | P.I-2026-RH-OS | Desenvolvido em Flutter/Dart
 
 ---
 
-### RNF01 – Plataforma e Compatibilidade
-
-O aplicativo é desenvolvido em Flutter com linguagem Dart, sendo compatível com dispositivos Android e iOS. O ambiente mínimo exigido para execução é Flutter SDK 3.0 ou superior. Para dispositivos Android, a versão mínima suportada é Android 8.0 (API 26), e para iOS, a versão mínima é iOS 13.
-
----
-
-### RNF02 – Desempenho na Extração de Currículos
-
-A leitura e extração automática de informações de um currículo via inteligência artificial deve ser concluída em no máximo 15 segundos para arquivos de até 5MB. Para arquivos maiores ou com múltiplas páginas, o sistema deve exibir uma barra de progresso informando ao usuário que o processamento está em andamento.
+### RNF01 - Plataforma e compatibilidade
+Aplicativo desenvolvido em Flutter 3.x e Dart 3.x, com foco atual em Android.
+Compatibilidade com iOS e planejada para evolucao futura.
 
 ---
 
-### RNF03 – Segurança e Autenticação
-
-O aplicativo deve utilizar autenticação via JWT (JSON Web Token) com controle de permissões baseado em perfis (RBAC), integrado a uma API backend. As senhas dos usuários devem ser armazenadas com algoritmo de hash seguro e nunca em texto puro. O token de sessão deve expirar após 8 horas de inatividade, sendo gerenciado com segurança pelo Flutter Secure Storage.
-
----
-
-### RNF04 – Armazenamento de Dados
-
-Os dados do aplicativo devem ser persistidos localmente utilizando SQLite via pacote sqflite do Flutter para armazenamento offline, e sincronizados com uma API REST quando houver conexão com a internet. Dados sensíveis, como tokens de sessão, devem ser armazenados com Flutter Secure Storage.
+### RNF02 - Performance da triagem
+O ranking de um lote de candidatos deve finalizar em ate 30s para 30 candidatos, com feedback visual de progresso e mensagens de erro claras.
 
 ---
 
-### RNF05 – Usabilidade
-
-A interface do sistema deve ser intuitiva o suficiente para que um recrutador sem treinamento técnico consiga realizar as operações básicas, como cadastrar um candidato, importar um currículo e consultar o histórico, sem necessidade de suporte. O tempo estimado de aprendizado para uso básico do sistema não deve ultrapassar uma hora.
-
----
-
-### RNF06 – Disponibilidade e Modo Offline
-
-O aplicativo deve funcionar em modo offline para as funcionalidades básicas de consulta e visualização de candidatos já cadastrados, utilizando o banco de dados local SQLite. A conexão com a internet é necessária para as funcionalidades que utilizam inteligência artificial, como extração e análise de currículos, e para sincronização dos dados com o servidor.
+### RNF03 - Disponibilidade da IA
+Se a IA estiver indisponivel, o sistema deve executar fallback local sem interromper a operacao e registrar falhas tecnicas.
 
 ---
 
-### RNF07 – Manutenibilidade
-
-O código-fonte do projeto deve seguir a arquitetura limpa (Clean Architecture) ou o padrão MVC adaptado para Flutter, separando as responsabilidades entre camadas de apresentação, domínio e dados. O uso de comentários no código é obrigatório em funções e widgets principais, seguindo os padrões de documentação do Dart com dartdoc.
-
----
-
-### RNF08 – Escalabilidade
-
-A arquitetura do aplicativo deve permitir que novas funcionalidades sejam adicionadas sem necessidade de reestruturação completa do projeto. O gerenciamento de estado deve ser feito com Provider ou Riverpod, garantindo que novos módulos possam ser incorporados de forma independente sem quebrar o que já está funcionando.
+### RNF04 - Seguranca e autenticacao
+O acesso deve ser protegido por Firebase Auth com perfis `admin` e `rh`, respeitando RBAC em rotas e operacoes.
 
 ---
 
-### RNF09 – Logs e Auditoria
-
-O sistema deve registrar automaticamente em log todas as ações relevantes realizadas pelos usuários, como login, alteração de status de candidatos, encerramento de processos e geração de relatórios. Esses logs devem ser armazenados no banco de dados e acessíveis somente pelo administrador.
-
----
-
-### RNF10 – Tamanho e Formato de Arquivos Aceitos
-
-O sistema deve aceitar currículos nos formatos PDF, JPG e PNG. O tamanho máximo por arquivo é de 10MB. Arquivos fora desses formatos ou acima do tamanho permitido devem ser rejeitados com uma mensagem clara informando o motivo e os formatos aceitos.
+### RNF05 - Persistencia e consistencia
+Dados persistentes devem residir no Cloud Firestore. Operacoes criticas devem possuir tratamento de excecao e logs.
 
 ---
 
-### RNF11 – Licença e Distribuição
+### RNF06 - Observabilidade
+Erros de OCR/IA, ranking e persistencia devem ser reportados ao Crashlytics com contexto util (ex.: entidade, operacao e identificadores quando disponiveis).
 
-O aplicativo é distribuído sob licença MIT, sendo livre para uso pessoal e comercial. O código-fonte deve ser mantido no repositório oficial do projeto no GitHub, com versionamento utilizando Git e organização de branches seguindo o padrão definido pela equipe. A publicação nas lojas (Google Play e App Store) é prevista para fases futuras do projeto.
+---
+
+### RNF07 - Usabilidade
+Fluxos principais (cadastrar vaga, importar curriculo, ranquear) devem ser realizaveis em poucos passos e sem treinamento tecnico.
+
+---
+
+### RNF08 - Manutenibilidade
+O projeto deve seguir separacao por camadas (core/data/domain/presentation), com DI via get_it e estado via Riverpod.
+
+---
+
+### RNF09 - Escalabilidade
+A modelagem NoSQL deve suportar crescimento sem migracoes destrutivas e com indices adequados no Firestore.
+
+---
+
+### RNF10 - Privacidade
+Dados sensiveis devem ser acessados apenas por perfis autorizados e nunca exibidos em logs de debug para usuario final.

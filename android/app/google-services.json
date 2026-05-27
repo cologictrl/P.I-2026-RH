@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "362330493789",
+    "project_id": "rhos-pi-2026",
+    "storage_bucket": "rhos-pi-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362330493789:android:815222715a1214a85c8eb4",
+        "android_client_info": {
+          "package_name": "com.rhos.rh_os"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnU8B6ZEevY8ibDJnIVi_RKiCkKFHQZ0g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,76 +1,73 @@
-@startuml diagrama-casos-de-uso-final
+@startuml diagrama-casos-de-uso
 
-title Diagrama de Casos de Uso – RHOS
+title Diagrama de Casos de Uso - RHOS
 
 left to right direction
+skinparam dpi 180
+skinparam shadowing false
 skinparam linetype ortho
 skinparam backgroundColor #FDFDFD
 skinparam packageStyle rectangle
+skinparam defaultFontSize 14
 
 skinparam usecase {
     BackgroundColor #F0F7FF
     BorderColor #255F71
     ArrowColor #255F71
-    FontSize 12
+    FontSize 14
 }
 
 skinparam actor {
     BackgroundColor #255F71
     BorderColor #255F71
-    FontSize 12
+    FontSize 14
 }
 
-' ── Atores Exclusivos do Sistema ────────────────────────────────
 actor "Administrador" as Admin
 actor "Recrutador" as Recruiter
-actor "Candidato" as Candidate
 
-' ── Sistema ─────────────────────────────────────────────────────
-rectangle "RHOS – RH Operation System" {
+rectangle "RHOS - RH Operation System" {
 
     usecase (UC00\nAutenticar no Sistema) as UC00
 
-    package "Gestão de Talentos" {
-        usecase (UC01\nImportar e Cadastrar\nCurrículo) as UC01
-        usecase (UC03\nConsultar Banco\nde Talentos) as UC03
-        usecase (UC02\nGerenciar Status\ndo Candidato) as UC02
+    package "Talentos" {
+        usecase (UC01\nCadastrar Candidato\ncom OCR) as UC01
+        usecase (UC02\nGerenciar Candidatura\nStatus e Score) as UC02
+        usecase (UC03\nRemover Candidatura) as UC03
     }
 
-    package "Processos Seletivos" {
-        usecase (UC04\nCadastrar Vaga) as UC04
-        usecase (UC05\nClassificar Candidatos\npor Critérios) as UC05
-        usecase (UC06\nEncerrar Processo\nSeletivo) as UC06
+    package "Vagas" {
+        usecase (UC04\nCadastrar/Editar Vaga) as UC04
+        usecase (UC05\nRanquear Candidatos) as UC05
+        usecase (UC06\nRefazer Ranking) as UC06
     }
 
-    package "Administração e Relatórios" {
-        usecase (UC07\nGerar Relatório\ndo Processo) as UC07
-        usecase (UC08\nGerenciar Usuários\ndo Sistema) as UC08
+    package "Entrevistas e Notificacoes" {
+        usecase (UC07\nAgendar Entrevista) as UC07
+        usecase (UC08\nNotificar Candidato) as UC08
+    }
+
+    package "Administracao" {
+        usecase (UC09\nGerenciar Usuarios) as UC09
     }
 }
 
-' ── Relacionamentos: Autenticação (Comum aos 3) ─────────────────
 Admin -- UC00
 Recruiter -- UC00
-Candidate -- UC00
 
-' ── Relacionamentos: Candidato ──────────────────────────────────
-Candidate -- UC01
-
-' ── Relacionamentos: Recrutador ─────────────────────────────────
 Recruiter -- UC01
+Recruiter -- UC02
 Recruiter -- UC03
 Recruiter -- UC04
+Recruiter -- UC05
 Recruiter -- UC06
+Recruiter -- UC07
+Recruiter -- UC08
 
-' ── Relacionamentos: Administrador ──────────────────────────────
-Admin -- UC06
-Admin -- UC08
+Admin -- UC09
 
-' ── Lógica de Extensão (Ações Indiretas) ────────────────────────
-' Evita linhas dos atores até esses casos de uso secundários
-UC03 <.. UC02 : <<extend>>
-UC04 <.. UC05 : <<extend>>
-UC06 <.. UC07 : <<extend>>
-UC03 <.. UC07 : <<extend>>
+UC05 <.. UC06 : <<extend>>
+UC02 <.. UC07 : <<extend>>
+UC07 <.. UC08 : <<include>>
 
 @enduml

@@ -1,57 +1,71 @@
 @startuml classes
 
-title Diagrama de Classes – Entidades e Repositórios\nRHOS (RH Operation System)
+title Diagrama de Classes - Entidades e Repositorios\nRHOS (RH Operation System)
 
+left to right direction
+skinparam dpi 180
+skinparam shadowing false
+skinparam defaultFontSize 13
 skinparam classBackgroundColor #EFF6FF
 skinparam classBorderColor #255F71
 skinparam classHeaderBackgroundColor #255F71
 skinparam classFontColor #1A1A1A
 skinparam classHeaderFontColor #FFFFFF
+skinparam classFontSize 12
+skinparam classAttributeIconSize 0
 skinparam interfaceBackgroundColor #FFF7ED
 skinparam interfaceBorderColor #F48C68
 skinparam interfaceHeaderBackgroundColor #F48C68
 skinparam interfaceFontColor #1A1A1A
 skinparam interfaceHeaderFontColor #FFFFFF
+skinparam interfaceFontSize 12
 skinparam ArrowColor #255F71
 skinparam backgroundColor #FFFFFF
 
-' ── Interfaces de Repositório ────────────────────────────────────
+' ── Interfaces de Repositorio ────────────────────────────────────
 
 interface ICandidatoRepositorio {
   +salvar(candidato: Candidato): Future<int>
+  +salvarCompleto(candidato: Candidato): Future<int>
   +listarTodos(): Future<List<Candidato>>
-  +buscarPorId(id: int): Future<Candidato?>
-  +buscarPorNome(nome: String): Future<List<Candidato>>
-  +deletar(id: int): Future<void>
-  +atualizarCampo(id, campo, valor): Future<void>
+  +buscarPorIdStr(idStr: String): Future<Candidato?>
+  +buscarPorEmail(email: String): Future<Candidato?>
+  +buscarPorCpf(cpf: String): Future<Candidato?>
+  +listarHabilidadesStr(candidatoIdStr: String): Future<List<Habilidade>>
+  +listarIdiomasStr(candidatoIdStr: String): Future<List<Idioma>>
+  +listarExperienciasStr(candidatoIdStr: String): Future<List<Experiencia>>
+  +listarFormacoesStr(candidatoIdStr: String): Future<List<Formacao>>
+  +atualizarCampoStr(idStr, campo, valor): Future<void>
+  +deletarPorIdStr(idStr: String): Future<void>
 }
 
 interface IVagaRepositorio {
   +salvar(vaga: Vaga): Future<int>
   +listarTodas(): Future<List<Vaga>>
   +listarPorStatus(status: String): Future<List<Vaga>>
-  +buscarPorId(id: int): Future<Vaga?>
-  +deletar(id: int): Future<void>
-  +atualizarStatus(id: int, status: String): Future<void>
+  +buscarPorIdStr(idStr: String): Future<Vaga?>
+  +deletarPorIdStr(idStr: String): Future<void>
+  +atualizarStatusStr(idStr: String, status: String): Future<void>
 }
 
 interface IUsuarioRepositorio {
   +autenticar(email: String, senhaHash: String): Future<Usuario?>
-  +buscarPorId(id: int): Future<Usuario?>
+  +buscarPorUid(uid: String): Future<Usuario?>
   +listarTodos(): Future<List<Usuario>>
   +salvar(usuario: Usuario): Future<int>
-  +atualizarAtivo(id: int, ativo: bool): Future<void>
+  +atualizarAtivoStr(uid: String, ativo: bool): Future<void>
 }
 
 interface ICandidaturaRepositorio {
   +salvar(candidatura: Candidatura): Future<int>
-  +listarPorVaga(vagaId: int): Future<List<Candidatura>>
-  +listarPorCandidato(candidatoId: int): Future<List<Candidatura>>
-  +atualizarStatus(id: int, status: String): Future<void>
-  +atualizarScore(id: int, score: double): Future<void>
+  +listarPorVagaStr(vagaIdStr: String): Future<List<Candidatura>>
+  +listarPorCandidatoStr(candidatoIdStr: String): Future<List<Candidatura>>
+  +atualizarStatusStr(idStr: String, status: String): Future<void>
+  +atualizarScoreStr(idStr: String, score: double): Future<void>
+  +deletarStr(idStr: String): Future<void>
 }
 
-' ── Implementações Firestore ─────────────────────────────────────
+' ── Implementacoes Firestore ─────────────────────────────────────
 
 class CandidatoRepositorioFirestore {
   -{static} _colecao: String = "candidatos"
@@ -59,16 +73,16 @@ class CandidatoRepositorioFirestore {
   +buscarPorEmail(email: String): Future<Candidato?>
   +buscarPorCpf(cpf: String): Future<Candidato?>
   +buscarPorUsuarioUid(uid: String): Future<Candidato?>
-  +buscarPorIdStr(id: String): Future<Candidato?>
-  +deletarPorIdStr(id: String): Future<void>
+  +buscarPorIdStr(idStr: String): Future<Candidato?>
+  +deletarPorIdStr(idStr: String): Future<void>
   +atualizarCampoStr(idStr, campo, valor): Future<void>
 }
 
 class VagaRepositorioFirestore {
   -{static} _colecao: String = "vagas"
   -_db: FirebaseFirestore
-  +buscarPorIdStr(id: String): Future<Vaga?>
-  +deletarPorIdStr(id: String): Future<void>
+  +buscarPorIdStr(idStr: String): Future<Vaga?>
+  +deletarPorIdStr(idStr: String): Future<void>
   +atualizarStatusStr(idStr: String, status: String): Future<void>
 }
 
@@ -78,6 +92,18 @@ class CandidaturaRepositorioFirestore {
   +listarPorVagaStr(vagaIdStr: String): Future<List<Candidatura>>
   +atualizarStatusStr(idStr: String, status: String): Future<void>
   +atualizarScoreStr(idStr: String, score: double): Future<void>
+  +deletarStr(idStr: String): Future<void>
+}
+
+class RankingRepositorioFirestore {
+  -{static} _colecao: String = "rankings"
+  -_db: FirebaseFirestore
+  +salvar(vagaIdStr, candidatoIdStr, dados): Future<void>
+  +buscar(vagaIdStr, candidatoIdStr): Future<Map?>
+  +listarPorVaga(vagaIdStr): Future<List<Map>>
+  +apagar(vagaIdStr, candidatoIdStr): Future<void>
+  +apagarPorVaga(vagaIdStr): Future<void>
+  +apagarPorCandidato(candidatoIdStr): Future<void>
 }
 
 class UsuarioRepositorioFirestore {
@@ -88,6 +114,17 @@ class UsuarioRepositorioFirestore {
   +atualizarAtivoStr(uid: String, ativo: bool): Future<void>
 }
 
+class EntrevistaRepositorioFirestore {
+  -{static} _colecao: String = "entrevistas"
+  -_db: FirebaseFirestore
+  +salvar(entrevista: Entrevista): Future<String?>
+  +deletar(idStr: String): Future<void>
+}
+
+class RankingService {
+  +calcularRanking(vaga, candidato, habilidades, idiomas, experiencias, formacoes): Future<Map?>
+}
+
 ' ── Entidades ────────────────────────────────────────────────────
 
 class Usuario {
@@ -96,64 +133,50 @@ class Usuario {
   +email: String
   +perfil: String
   +ativo: bool
-  +fromMap(map: Map): Usuario
-  +toMap(): Map
-  +copyWith(): Usuario
 }
 
 class Candidato {
-  +id: int?
   +idStr: String?
   +usuarioUid: String?
-  +nomeCompleto: String?
-  +nomePreferencia: String?
+  +nome: String?
   +cpf: String?
   +email: String?
   +telefone: String?
-  +logradouro: String?
-  +numero: String?
-  +bairro: String?
-  +cidade: String?
-  +estado: String?
-  +cep: String?
   +resumo: String?
-  +habilidades: List<Habilidade>
-  +idiomas: List<Idioma>
-  +experiencias: List<Experiencia>
-  +formacoes: List<Formacao>
-  +fromMap(map: Map): Candidato
-  +toMap(): Map
-  +copyWith(): Candidato
 }
 
 class Vaga {
-  +id: int?
   +idStr: String?
   +titulo: String
   +descricao: String?
   +status: String
-  +habilidadesDesejadas: List<String>?
-  +idiomasDesejados: List<String>?
-  +formacaoMinima: String?
-  +fromMap(map: Map): Vaga
-  +toMap(): Map
-  +copyWith(): Vaga
+  +requisitos: List<String>?
+  +habilidades: List<String>?
+  +softSkills: List<String>?
+  +senioridade: String?
+  +local: String?
+  +modalidade: String?
+  +salarioMin: double?
+  +salarioMax: double?
 }
 
 class Candidatura {
-  +id: int?
   +idStr: String?
   +candidatoIdStr: String?
   +vagaIdStr: String?
   +score: double
   +status: String
-  +fromMap(map: Map): Candidatura
-  +toMap(): Map
-  +copyWith(): Candidatura
+}
+
+class Entrevista {
+  +idStr: String?
+  +vagaIdStr: String?
+  +candidatoIdStr: String?
+  +dataHora: String
+  +status: String
 }
 
 class Experiencia {
-  +id: int?
   +cargo: String?
   +empresa: String?
   +localidade: String?
@@ -165,22 +188,19 @@ class Experiencia {
 }
 
 class Habilidade {
-  +id: int?
   +nome: String
   +categoria: String
 }
 
 class Idioma {
-  +id: int?
   +nome: String
   +nivel: String
 }
 
 class Formacao {
-  +id: int?
   +instituicao: String?
   +curso: String?
-  +grau: String?
+  +nivel: String?
   +anoConclusao: String?
 }
 
@@ -201,14 +221,8 @@ class VerificarDuplicidade {
   +executar(cpf, email): Future<Candidato?>
 }
 
-class MergeCandidato {
-  -_repo: ICandidatoRepositorio
-  +executar(existente, novo): Future<void>
-}
-
 class RanquearCandidatos {
-  +calcularScore(candidato, vaga): double
-  +ranquear(candidaturas, candidatos, vaga): List<Candidatura>
+  +calcularDetalhado(candidato, vaga): RankingDetalhado
 }
 
 class AutenticarUsuario {
@@ -221,6 +235,13 @@ class GeminiOcrService {
   -{static} _apiKey: String
   -{static} _prompt: String
   +extrairDadosDosBytes(bytes, mimeType): Future<Map?>
+}
+
+class RankingDetalhado {
+  +scoreTotal: double
+  +scoresPorEixo: Map
+  +gatingAprovado: bool
+  +requisitosNaoAtendidos: List<String>
 }
 
 ' ── Relacionamentos ──────────────────────────────────────────────

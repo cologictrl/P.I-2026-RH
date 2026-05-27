@@ -1,44 +1,52 @@
-# Documento de Visão do Produto RH-OS
+# Documento de Visao do Produto RH-OS
 
-## 1. Visão Geral
+## 1. Visao geral
 
- RH-OS é um aplicativo móvel desenvolvido em Flutter que utiliza Inteligência Artificial para automatizar a análise de currículos em processos seletivos.
+RH-OS e um aplicativo mobile em Flutter para equipes de RH realizarem triagem, ranking e acompanhamento de candidatos com apoio de IA e regras de negocio claras.
 
-## 2. Problema Identificado
+## 2. Problema
 
-Empresas de RH recebem um grande volume de currículos, isso torna a triagem manual lenta e despadronizada.
+Triagens manuais geram atraso, inconsistencias e baixa previsibilidade:
 
-Impactos:
-- Alto tempo de análise
-- Subjetividade na avaliação
-- Atraso nas contratações
+- Alto tempo de analise por vaga
+- Avaliacao subjetiva entre recrutadores
+- Dificuldade de rastrear historico e status
 
-## 3. Proposta de Solução
+## 3. Proposta de solucao
 
-O aplicativo permitirá:
+O aplicativo permite:
 
-- Upload de currículos (PDF/imagem)
-- Leitura via OCR
-- Extração automática de dados
-- Classificação com base em requisitos da vaga
-- Geração de score de compatibilidade
+- Upload de curriculos (PDF/imagem)
+- OCR com Gemini e fallback local
+- Cadastro de candidatos e vagas
+- Ranking por rubrica (0..5 por eixo) com pesos configuraveis
+- Cache de ranking no Firestore, com invalidacao e recalculo
+- Gestao de candidaturas (status, aprovacao, reprova)
+- Agendamento de entrevistas e notificacoes
 
-## 4. Beneficiado Externo
+## 4. Personas e beneficiados
 
-Empresa de RH:
-CNPJ:
-Status: Ativo
+- Recrutador: cria vagas, vincula candidatos, calcula ranking, acompanha status
+- Administrador: gerencia usuarios e auditoria
 
 ## 5. Objetivos
 
-### Objetivo Geral
-Automatizar a triagem de currículos utilizando IA.
+### Objetivo geral
+Automatizar e padronizar a triagem de curriculos com IA e regras auditaveis.
 
-### Objetivos Específicos
-- Reduzir tempo de análise
-- Padronizar avaliação
-- Aumentar eficiência do recrutamento
+### Objetivos especificos
+- Reduzir tempo de triagem
+- Aumentar consistencia do ranking
+- Melhorar rastreabilidade do processo
+- Facilitar reavaliacao e repescagem
 
-## 6. ODS Relacionado
+## 6. Metricas de sucesso
 
-ODS 8 – Trabalho Decente e Crescimento Econômico
+- Tempo medio de triagem por vaga
+- Percentual de candidatos avaliados com rubrica completa
+- Taxa de falha do ranking por indisponibilidade de IA
+- Tempo medio entre aprovacao e agendamento de entrevista
+
+## 7. ODS relacionado
+
+ODS 8 - Trabalho Decente e Crescimento Economico

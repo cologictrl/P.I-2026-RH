@@ -1,0 +1,23 @@
+@startuml UC01-cadastrar-candidato-sequencia
+
+title UC01 - Cadastro de candidato (sequencia)
+
+actor Recrutador as R
+participant "TelaUpload" as UI
+participant "PdfParser/OcrService" as OCR
+participant "GeminiOcrService" as GEM
+participant "CandidatoRepositorio" as CR
+participant "Firestore" as FS
+
+R -> UI: Seleciona arquivo
+UI -> OCR: Extrair texto
+OCR -> GEM: Enviar bytes (se necessario)
+GEM --> OCR: Dados estruturados (ou erro)
+UI -> UI: Validar resumo e habilidades
+UI -> CR: salvarCompleto(candidato)
+CR -> FS: add(candidatos)
+FS --> CR: ok
+CR --> UI: ok
+UI --> R: Confirmacao
+
+@enduml
